@@ -2,7 +2,10 @@
   "name": "imobiliaria",
   "version": "1.0.0",
   "description": "Projeto de uma imobiliária usando Node.js e Koa",
-  "main": "src/server.js",
+  "main": "server.js",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
