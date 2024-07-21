@@ -22,7 +22,7 @@
     "koa-jwt": "^4.0.4",
     "koa-logger": "^3.2.1",
     "koa-router": "^10.0.0",
-    "mongoose": "^8.0.0",
+    "mongoose": "^8.5.1",
     "mongoose-timestamp": "^0.6.0"
   },
   "devDependencies": {
