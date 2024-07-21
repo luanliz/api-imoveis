@@ -69,6 +69,7 @@ module.exports.updateResidence = async (ctx, next) => {
 
         // Atualizar a residência se a verificação de permissão passar
         Object.assign(residence, ctx.request.body);
+        residence.updatedBy = userId;
         await residence.save();
 
         ctx.body = residence;
