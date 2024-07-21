@@ -2,12 +2,16 @@ const Residence = require('../residence/residence.model')
 
 module.exports.createResidence = async (ctx,next) => {
     try {
-        console.log('ctx.state.user:', ctx.state.user);
+
+        if(!ctx.state.user) {
+            ctx.status = 401;
+            ctx.body = 'Você precisa estar logado para criar uma residência';
+            return;
+        }
+        
         const userId = ctx.state.user.id;
-        console.log('userId:', userId);
         const residence = new Residence({...ctx.request.body, createdBy: userId});
         await residence.save();
-        console.log('Residência criada:', residence);
         ctx.status = 201;
         ctx.body = residence;
     } catch (err) {
@@ -45,14 +49,11 @@ module.exports.getResidenceById = async (ctx,next) => {
 
 module.exports.updateResidence = async (ctx, next) => {
     try {
-        console.log('ctx.state.user:', ctx.state.user);
         const residenceId = ctx.params.residenceId;
         const userRole = ctx.state.user.role;
         const userId = ctx.state.user.id;
 
         const residence = await Residence.findById(residenceId);
-
-        console.log('residence:', residence);
 
         if (!residence) {
             ctx.status = 404;
