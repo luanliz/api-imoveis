@@ -1,6 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
+const mongooseTimestamp = require('mongoose-timestamp')
 
 const ObjectId = mongoose.Schema.Types.ObjectId
 
@@ -59,14 +60,16 @@ const schema = new mongoose.Schema({
     country: {
         type: String,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
+    createdBy: {
+        type: ObjectId,
+        ref: 'User'
     },
-    updatedAt: {
-        type: Date,
-        default: Date.now
+    updatedBy: {
+        type: ObjectId,
+        ref: 'User'
     }
 });
+
+schema.plugin(mongooseTimestamp)
 
 module.exports = mongoose.model('Residence', schema)

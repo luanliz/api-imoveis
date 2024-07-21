@@ -2,8 +2,12 @@ const Residence = require('../residence/residence.model')
 
 module.exports.createResidence = async (ctx,next) => {
     try {
-        const residence = new Residence(ctx.request.body);
+        console.log('ctx.state.user:', ctx.state.user);
+        const userId = ctx.state.user.id;
+        console.log('userId:', userId);
+        const residence = new Residence({...ctx.request.body, createdBy: userId});
         await residence.save();
+        console.log('Residência criada:', residence);
         ctx.status = 201;
         ctx.body = residence;
     } catch (err) {
@@ -28,7 +32,7 @@ module.exports.getResidenceById = async (ctx,next) => {
         const residence = await Residence.findById(residenceId);
         if (!residence) {
             ctx.status = 404;
-            ctx.body = 404;
+            ctx.body = 'Imóvel não encontrado';
             return;
         }
         ctx.body = residence;
@@ -38,36 +42,70 @@ module.exports.getResidenceById = async (ctx,next) => {
     }
 };
 
-module.exports.updateResidence = async (ctx,next) => {
-    try {
-        const residenceId = ctx.params.residenceId;
-        const residence = await Residence.findByIdAndUpdate(residenceId,ctx.request.body, { new: true });
-        if(!Residence){
-            ctx.status = 404;
-            ctx.body = 'Residence not found';
-            return
-        }
-        ctx.body = residence;
-    } catch(err) {
-        ctx.status = 500;
-        ctx.body = err.message;
-    }
-};
 
-module.exports.deleteResidence = async (ctx,next) => {
+module.exports.updateResidence = async (ctx, next) => {
     try {
+        console.log('ctx.state.user:', ctx.state.user);
         const residenceId = ctx.params.residenceId;
-        const residence = await Residence.findByIdAndDelete(residenceId);
+        const userRole = ctx.state.user.role;
+        const userId = ctx.state.user.id;
+
+        const residence = await Residence.findById(residenceId);
+
+        console.log('residence:', residence);
+
         if (!residence) {
             ctx.status = 404;
             ctx.body = 'Residence not found';
             return;
         }
-        ctx.status = 200;
-        ctx.body = 'Residência deletada com sucesso';
-        return;
+
+        // Verificar se o usuário tem permissão para editar a residência
+        if (userRole !== 'ADMIN' && residence.createdBy.toString() !== userId) {
+            ctx.status = 401;
+            ctx.body = 'Você não tem permissão para editar esta residência';
+            return;
+        }
+
+        // Atualizar a residência se a verificação de permissão passar
+        Object.assign(residence, ctx.request.body);
+        await residence.save();
+
+        ctx.body = residence;
     } catch (err) {
         ctx.status = 500;
         ctx.body = err.message;
     }
-}
+};
+
+
+module.exports.deleteResidence = async (ctx, next) => {
+    try {
+        const residenceId = ctx.params.residenceId;
+        const userRole = ctx.state.user.role;
+        const userId = ctx.state.user.id;
+
+        const residence = await Residence.findById(residenceId);
+
+        if (!residence) {
+            ctx.status = 404;
+            ctx.body = 'Imóvel não encontrado';
+            return;
+        }
+
+        // Verifique se o usuário tem permissão para deletar a residência
+        if (userRole !== 'ADMIN' && residence.createdBy.toString() !== userId) {
+            ctx.status = 401;
+            ctx.body = 'Você não tem permissão para deletar este imóvel';
+            return;
+        }
+
+        await Residence.deleteOne({ _id: residenceId });
+
+        ctx.status = 200;
+        ctx.body = 'Imóvel deletado com sucesso';
+    } catch (err) {
+        ctx.status = 500;
+        ctx.body = err.message;
+    }
+};

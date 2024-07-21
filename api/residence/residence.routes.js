@@ -1,4 +1,5 @@
 const Router = require('@koa/router')
+const checkRoleUser = require('../auth/auth.middleware')
 const { createResidence, getAllResidences, getResidenceById, updateResidence, deleteResidence  } = require('../residence/residence.middleware')
 
 const router = new Router({
